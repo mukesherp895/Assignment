@@ -19,4 +19,10 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Assignment.Common\Assignment.Common.csproj" />
+    <ProjectReference Include="..\Assignment.DataAccess\Assignment.DataAccess.csproj" />
+    <ProjectReference Include="..\Assignment.Model\Assignment.Model.csproj" />
+  </ItemGroup>
+
 </Project>

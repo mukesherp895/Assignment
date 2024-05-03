@@ -6,4 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Assignment.API\Assignment.API.csproj" />
+    <ProjectReference Include="..\Assignment.Common\Assignment.Common.csproj" />
+  </ItemGroup>
+
 </Project>
