@@ -1,0 +1,120 @@
+﻿@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Assignment | Login</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="#">
+    <meta name="keywords" content="Admin , Responsive, Landing, Bootstrap, App, Template, Mobile, iOS, Android, apple, creative app">
+    <meta name="author" content="#">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet">
+    <link href="~/vendor/bowercomponents/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/vendor/assets/icon/feather/css/feather.css" rel="stylesheet" type="text/css" />
+    <link href="~/vendor/assets/icon/themify-icons/themify-icons.css" rel="stylesheet" type="text/css" />
+    <link href="~/vendor/assets/icon/icofont/css/icofont.css" rel="stylesheet" type="text/css" />
+    <link href="~/vendor/assets/icon/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/vendor/assets/css/component.css" rel="stylesheet" type="text/css" />
+    <link href="~/vendor/assets/css/style.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body class="fix-menu">
+    <!-- Pre-loader start -->
+    <div class="theme-loader">
+        <div class="ball-scale">
+            <div class='contain'>
+                <div class="ring"><div class="frame"></div></div>
+                <div class="ring"><div class="frame"></div></div>
+                <div class="ring"><div class="frame"></div></div>
+                <div class="ring"><div class="frame"></div></div>
+                <div class="ring"><div class="frame"></div></div>
+                <div class="ring"><div class="frame"></div></div>
+                <div class="ring"><div class="frame"></div></div>
+                <div class="ring"><div class="frame"></div></div>
+                <div class="ring"><div class="frame"></div></div>
+                <div class="ring"><div class="frame"></div></div>
+            </div>
+        </div>
+    </div>
+    <section class="login-block">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12">
+                    <form class="md-float-material form-material" asp-action="Login" asp-controller="Account" method="post" asp-antiforgery="true">
+                        <div class="text-center">
+                            <h1 style="font-weight:bold !important; color: darkblue !important">Assignment</h1>
+                        </div>
+                        <div class="auth-box card">
+                            <div class="card-block">
+                                <div class="row m-b-20">
+                                    <div class="col-md-12">
+                                        <h3 class="text-center">Sign In</h3>
+                                    </div>
+                                </div>
+                                @if (ViewBag.IsError == true)
+                                {
+                                    <div class="row m-b-20">
+                                        <div class="col-md-12">
+                                            <h6 class="text-center text-danger">@ViewBag.Message</h6>
+                                        </div>
+                                    </div>
+                                }
+
+                                <div class="form-group form-primary">
+                                    <input type="text" name="Email" class="form-control" required="" placeholder="Email">
+                                </div>
+                                <div class="form-group form-primary">
+                                    <div class="input-group">
+                                        <input type="password" name="Password" class="form-control" required="" id="password" placeholder="Password">
+                                        <span class="input-group-addon" style="background-color: darkblue !important">
+                                            <i class="fa fa-eye" id="addonpassword"></i>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="row m-t-25 text-left">
+                                    <div class="col-12">
+                                        <div class="checkbox-fade fade-in-primary d-">
+                                            <label>
+                                                <input type="checkbox" name="RememberMe">
+                                                <span class="cr"><i class="cr-icon icofont icofont-ui-check txt-primary"></i></span>
+                                                <span class="text-inverse" style="color: darkblue !important;">Remember me</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row m-t-30">
+                                    <div class="col-md-12">
+                                        <button type="submit" class="btn btn-md btn-block btn-round waves-effect waves-light text-center m-b-20" style="background-color: darkblue; color: white;">Sign in</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="~/vendor/bowercomponents/jquery/js/jquery.min.js" type="text/javascript"></script>
+    <script src="~/vendor/bowercomponents/jquery-ui/js/jquery-ui.min.js" type="text/javascript"></script>
+    <script src="~/vendor/bowercomponents/popper.js/js/popper.min.js" type="text/javascript"></script>
+    <script src="~/vendor/bowercomponents/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="~/vendor/bowercomponents/i18next/js/i18next.min.js"></script>
+    <script src="~/vendor/bowercomponents/i18next-xhr-backend/js/i18nextXHRBackend.min.js"></script>
+    <script src="~/vendor/bowercomponents/i18next-browser-languagedetector/js/i18nextBrowserLanguageDetector.min.js"></script>
+    <script src="~/vendor/bowercomponents/jquery-i18next/js/jquery-i18next.min.js"></script>
+    <script src="~/vendor/assets/js/script.js"></script>
+    <script>
+        $("#addonpassword").on('click', function () {
+            $(this).toggleClass("fa fa-eye fa fa-eye-slash");
+            var input = $("#password");
+            input.attr('type') === 'password' ? input.attr('type', 'text') : input.attr('type', 'password');
+        });
+    </script>
+</body>
+
+</html>
+
