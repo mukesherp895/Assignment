@@ -14,7 +14,6 @@ namespace Assignment.API.Controllers
     [Authorize(AuthenticationSchemes = "Bearer")]
     [Route("api/v1/companyinfo")]
     [ApiController]
-    //[TypeFilter(typeof(CustomAuthorizationFilter))]
     public class CompanyInfoController : ControllerBase
     {
         private readonly ICompanyInfoRepository _companyInfoRepository;
