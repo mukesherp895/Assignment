@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Assignment.Model.DTO
 {
-    public class CompanyInfosDto : CommonListDto
+    public class CompanyInfoAddUpdateReqDto
     {
+        public int Id { get; set; }
         public string CompanyName { get; set; }
-        public string Schema { get; set; }
     }
 }

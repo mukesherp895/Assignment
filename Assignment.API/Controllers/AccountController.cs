@@ -106,7 +106,7 @@ namespace Assignment.API.Controllers
                                     new Claim(ClaimTypes.Name, user.UserName),
                                     new Claim(ClaimTypes.Email, user.Email),
                                 }),
-                                Expires = DateTime.UtcNow.AddMinutes(1),
+                                Expires = DateTime.UtcNow.AddMinutes(30),
                                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey), SecurityAlgorithms.HmacSha256Signature)
                             };
 

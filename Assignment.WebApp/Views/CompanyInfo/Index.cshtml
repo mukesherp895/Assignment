@@ -1,0 +1,222 @@
+﻿@using Microsoft.AspNetCore.Http
+@using Assignment.Common
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    ViewData["Title"] = ViewBag.PageHeader;
+    var userName = HttpContextAccessor.HttpContext.Session.GetString("UserName");
+    var accessToken = HttpContextAccessor.HttpContext.Session.GetString("AccessToken");
+    var tokenType = HttpContextAccessor.HttpContext.Session.GetString("TokenType");
+    var baseUrl = AppSettings.BaseUrlV1;
+}
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-header">
+                <button type="button" class="btn btn-grd-inverse btn-round btn-sm" id="btnAdd"><i class="feather icon-plus"> Add</i></button>
+            </div>
+            <div class="card-block">
+                <div class="table-responsive dt-responsive">
+                    <table id="companyInfoTable" class="table table-striped table-bordered nowrap">
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="default-Modal" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="modaltitle">Company Information Add</h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="frmCompanyInfo" class="md-float-material form-material">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <input type="hidden" name="Id" id="companyId" value="0" />
+                            <div class="form-group form-primary">
+                                <input type="text" name="CompanyName" class="form-control" id="companyName" required="" placeholder="Company Name">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding: 8px;">
+                    <button type="submit" class="btn btn-primary waves-effect waves-light btn-sm" id="btnSave">Save changes</button>
+                    <button type="button" class="btn btn-danger waves-effect btn-sm" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        //Load
+        $(function () {
+            CompanyInfoTableGet();
+        });
+
+        //DataTable
+        function CompanyInfoTableGet() {
+            $("#companyInfoTable").DataTable({
+                async: true,
+                "responsive": true,
+                bProcessing: true,
+                bServerSide: true,
+                sAjaxSource: "/companyinfo/CompanyInfoGet",
+                bAutoWidth: false,
+                displayLength: 10,
+                "aoColumns": [
+                    { "mData": 'RowNum', name: "RowNum", title: 'SN', bSortable: false },
+                    {
+                        "mData": function (e) {
+                            var data = JSON.stringify(e);
+                            //console.log(data);
+                            return "<button type='button' class='btn btn-grd-primary btn-round btn-mini' onclick='edit(" + data + ")'><i class='fa fa-edit'> Edit</i></button> <button type='button' class='btn btn-grd-danger  btn-round btn-mini' onclick='del(" + data + ")'><i class='fa fa-trash'> Remove</i></button>";
+                        }, title: 'Action', orderable: false
+                    },
+                    { "mData": 'CompanyName', name: "CompanyName", title: 'CompanyName', bSortable: true },
+                    { "mData": 'Schema', name: "Schema", title: 'Schema', bSortable: true },
+                    { "mData": 'CreatedBy', name: "CreatedBy", title: 'CreatedBy', bSortable: true },
+                    { "mData": 'CreatedDateTime', name: "CreatedDateTime", title: 'CreatedDateTime', bSortable: true },
+                    { "mData": 'UpdatedBy', name: "UpdatedBy", title: 'UpdatedBy', bSortable: true },
+                    { "mData": 'UpdatedDateTime', name: "UpdatedDateTime", title: 'UpdatedDateTime', bSortable: true },
+                ],
+            });
+        }
+
+        //Add Model Show
+        $("#btnAdd").click(function () {
+            $('#frmCompanyInfo').trigger("reset");
+            $("#frmCompanyInfo").validate().resetForm();
+            $("#companyId").val(0);
+            $("#modaltitle").text("Company Information Add");
+            $("#default-Modal").modal("show");
+        });
+
+        $("#frmCompanyInfo").submit(function (e) {
+            e.preventDefault();
+            $("#frmCompanyInfo").validate();
+            var formStatus = $("#frmCompanyInfo").valid();
+            //console.log(formStatus);
+            if (formStatus) {
+                var formdata = new FormData($('#frmCompanyInfo')[0]);
+                console.log(parseInt($("#companyId").val()));
+                var tempUrl = parseInt($("#companyId").val()) == 0 ? '/companyinfo/add' : ('/companyinfo/update/' + $("#companyId").val());
+                var tempType = parseInt($("#companyId").val()) == 0 ? 'POST' : 'PUT';
+                console.log(tempUrl);
+                console.log(tempType);
+                $("#btnSave").text("Please wait...");
+                $("#btnsave").prop("disabled", true);
+                swal({
+                    title: "Are you sure?",
+                    text: "Apply this information",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonClass: "btn-danger",
+                    confirmButtonText: "Yes, Apply it!",
+                    closeOnConfirm: false
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+                            async: true,
+                            url: '/companyinfo/addupdate',
+                            data: formdata,
+                            type: 'POST',
+                            dataType: 'json',
+                            processData: false,
+                            contentType: false,
+                            success: function (response) {
+                                console.log(response);
+                                $("#btnSave").text("Save changes");
+                                $("#btnSave").prop("disabled", false);
+                                if (response.status == "00") {
+                                    swal("Apply", response.message, "success");
+                                    $("#companyInfoTable").DataTable().ajax.reload();
+                                    $("#default-Modal").modal("hide");
+                                }
+                                else if (response.status == "88") {
+                                    window.location = "/account/login";
+                                }
+                                else {
+                                    swal("Warning", response.message, "warning");
+                                }
+                            },
+                            error: function (xhr, status, errorThrown) {
+                                $("#btnSave").text("Save changes");
+                                $("#btnSave").prop("disabled", false);
+                                swal("Error!", xhr.status, "error");
+                            }
+                        });
+                    }
+                    else
+                    {
+                        $("#btnSave").text("Save changes");
+                        $("#btnSave").prop("disabled", false);
+                    }
+                });
+            }
+        })
+
+        //Edit Model Show
+        function edit(data) {
+            console.log(data);
+            $('#frmCompanyInfo').trigger("reset");
+            $("#frmCompanyInfo").validate().resetForm();
+            $("#modaltitle").text("Company Information Edit");
+            $("#companyId").val(data.Id);
+            $("#companyName").val(data.CompanyName);
+            $("#default-Modal").modal("show");
+        }
+
+        //Delete
+        function del(data) {
+            swal({
+                title: "Are you sure delete this?",
+                text: "Apply this information",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes, Apply it!",
+                closeOnConfirm: false
+            }, function (isConfirm) {
+                if (isConfirm)
+                {
+                    $.ajax({
+                        async: true,
+                        url: '/companyinfo/delete/' + data.Id,
+                        type: 'DELETE',
+                        success: function (response) {
+                            console.log(response);
+                            if (response.status == "00") {
+                                swal("Deleted", response.message, "success");
+                                $("#companyInfoTable").DataTable().ajax.reload();
+                            }
+                            else if (response.status == "88") {
+                                window.location = "/account/login";
+                            }
+                            else {
+                                swal("Warning", response.message, "warning");
+                            }
+                        },
+                        error: function (xhr, status, errorThrown) {
+                            swal("Error!", xhr.status, "error");
+                        }
+                    });
+                }
+            });
+        }
+
+    </script>
+}

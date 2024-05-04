@@ -1,9 +1,11 @@
+using Assignment.WebApp.Attributes;
 using Assignment.WebApp.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace Assignment.WebApp.Controllers
 {
+    [CheckAthorization]
     public class HomeController : Controller
     {
         public IActionResult Index()

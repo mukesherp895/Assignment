@@ -68,5 +68,10 @@ namespace Assignment.WebApp.Controllers
             }
             return View();
         }
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return Redirect("~/account/login");
+        }
     }
 }

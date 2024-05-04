@@ -6,6 +6,8 @@ using Assignment.Model.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Assignment.API.Controllers
 {
@@ -20,27 +22,38 @@ namespace Assignment.API.Controllers
         {
             _companyInfoRepository = companyInfoRepository;
         }
-        [HttpGet("getallcompanyinfos")]
-        public async Task<IActionResult> GetAllCompanyInfos()
+        [HttpGet("getallcompanyinfobyfilter")]
+        public async Task<IActionResult> GetAllCompanyInfos(int iDisplayStart, int iDisplayLength, string? sSearch, int sEcho, string? sSortDir_0, int iSortCol_0)
         {
             //Response Body Initialization
             ResponseDto responseDto = new ResponseDto();
             try
             {
+                DataTableParamDto paramDto = new DataTableParamDto 
+                {
+                    iDisplayLength = iDisplayLength, sSearch = sSearch, sEcho = sEcho, sSortDir_0 = sSortDir_0, iDisplayStart = iDisplayStart, iSortCol_0 = iSortCol_0
+                };
+                int? recCount = 0;
+                var data = await _companyInfoRepository.GetAllCompanyInfoAsync(paramDto);
+                if (data != null && data.Count > 0)
+                {
+                    recCount = data[0].RecCount;
+                }
                 responseDto.Status = ResponseStatus.Success;
                 responseDto.Message = "Success";
-                responseDto.Data = await _companyInfoRepository.GetAllCompanyInfoAsync();
+                responseDto.Data = new { aaData = data, sEcho = paramDto.sEcho, iTotalDisplayRecords = recCount, iTotalRecords = recCount };
                 return Ok(responseDto);
             }
             catch (Exception ex)
             {
                 responseDto.Status = ResponseStatus.Fail;
                 responseDto.Message = ex.Message;
+                responseDto.Data = new { aaData = new List<CompanyInfosDto>(), sEcho = sEcho, iTotalDisplayRecords = 0, iTotalRecords = 0 };
                 return this.StatusCode(StatusCodes.Status500InternalServerError, responseDto);
             }
         }
         [HttpPost("add")]
-        public async Task<IActionResult> Add(CompanyInfoReqDto reqDto)
+        public async Task<IActionResult> Add([FromBody] CompanyInfoReqDto reqDto)
         {
             //Response Body Initialization
             ResponseDto responseDto = new ResponseDto();
@@ -89,7 +102,7 @@ namespace Assignment.API.Controllers
             }
         }
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> Update(int id, CompanyInfoReqDto reqDto)
+        public async Task<IActionResult> Update(int id, [FromBody] CompanyInfoReqDto reqDto)
         {
             //Response Body Initialization
             ResponseDto responseDto = new ResponseDto();
@@ -147,7 +160,7 @@ namespace Assignment.API.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, responseDto);
             }
         }
-        [HttpDelete("detele/{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             //Response Body Initialization

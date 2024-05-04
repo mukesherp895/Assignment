@@ -2,6 +2,7 @@
 using Assignment.DataAccess.DBContext;
 using Assignment.Model.Domain;
 using Assignment.Model.DTO;
+using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -16,7 +17,7 @@ namespace Assignment.DataAccess.Repository
     {
         Task<EnumData.DBAttempt> AddAsync(CompanyInfos companyInfos);
         Task<EnumData.DBAttempt> DeleteAsync(CompanyInfos companyInfos);
-        Task<List<CompanyInfosDto>> GetAllCompanyInfoAsync();
+        Task<List<CompanyInfosDto>> GetAllCompanyInfoAsync(DataTableParamDto dto);
         Task<CompanyInfos> GetByIdCompanyInfoAsync(int id);
         Task<EnumData.DBAttempt> UpdateAsync(CompanyInfos companyInfos);
     }
@@ -75,9 +76,15 @@ namespace Assignment.DataAccess.Repository
             }
             return EnumData.DBAttempt.Fail;
         }
-        public async Task<List<CompanyInfosDto>> GetAllCompanyInfoAsync()
+        public async Task<List<CompanyInfosDto>> GetAllCompanyInfoAsync(DataTableParamDto dto)
         {
-            return await _dbContext.CompanyInfos.Select(s => new CompanyInfosDto { Id = s.Id, CompanyName = s.CompanyName, Schema = s.Schema }).ToListAsync();
+            using (SqlConnection conn = new SqlConnection(_dbContext.Database.GetConnectionString()))
+            {
+                var parameters = new { displayStart = dto.iDisplayStart, displayLength = dto.iDisplayLength, sortDir = dto.sSortDir_0 ?? "asc", sortCol = dto.iSortCol_0, search = dto.sSearch ?? "" };
+                await conn.OpenAsync();
+                var data = await conn.QueryAsync<CompanyInfosDto>("Sp_GetCompanyInfoByFilter", parameters, commandType: System.Data.CommandType.StoredProcedure);
+                return data.ToList();
+            }
         }
         public async Task<CompanyInfos> GetByIdCompanyInfoAsync(int id)
         {
