@@ -10,6 +10,7 @@ namespace Assignment.WebApp.Controllers
     {
         public IActionResult Login()
         {
+            HttpContext.Session.Clear();
             return View();
         }
         [HttpPost]

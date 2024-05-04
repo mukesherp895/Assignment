@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34701.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assignment.API", "Assignment.API\Assignment.API.csproj", "{7B736864-E229-4DD7-A724-732952F9C2E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Assignment.API", "Assignment.API\Assignment.API.csproj", "{7B736864-E229-4DD7-A724-732952F9C2E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assignment.DataAccess", "Assignment.DataAccess\Assignment.DataAccess.csproj", "{C3F4A7CF-6EC5-44D1-8F45-EC7E7AE849A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Assignment.DataAccess", "Assignment.DataAccess\Assignment.DataAccess.csproj", "{C3F4A7CF-6EC5-44D1-8F45-EC7E7AE849A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assignment.Common", "Assignment.Common\Assignment.Common.csproj", "{D731F993-7844-4F83-9E0C-C46D596EDBE5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Assignment.Common", "Assignment.Common\Assignment.Common.csproj", "{D731F993-7844-4F83-9E0C-C46D596EDBE5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assignment.Model", "Assignment.Model\Assignment.Model.csproj", "{FA5035BB-C30A-4D01-9592-934AB4AA9240}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Assignment.Model", "Assignment.Model\Assignment.Model.csproj", "{FA5035BB-C30A-4D01-9592-934AB4AA9240}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assignment.WebApp", "Assignment.WebApp\Assignment.WebApp.csproj", "{16A6DE6C-0B57-4060-9B76-BD444F033D8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Assignment.WebApp", "Assignment.WebApp\Assignment.WebApp.csproj", "{16A6DE6C-0B57-4060-9B76-BD444F033D8A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -6,7 +6,7 @@ using Assignment.Common;
 namespace Assignment.WebApp.Attributes
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class CheckAthorization : Attribute, IAsyncAuthorizationFilter
+    public class CheckSessionAthorization : Attribute, IAsyncAuthorizationFilter
     {
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {

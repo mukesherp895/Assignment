@@ -1,12 +1,9 @@
-﻿using Assignment.API.Attributes;
-using Assignment.Common;
+﻿using Assignment.Common;
 using Assignment.DataAccess.Repository;
 using Assignment.Model.Domain;
 using Assignment.Model.DTO;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Client;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Assignment.API.Controllers
@@ -21,8 +18,8 @@ namespace Assignment.API.Controllers
         {
             _companyInfoRepository = companyInfoRepository;
         }
-        [HttpGet("getallcompanyinfobyfilter")]
-        public async Task<IActionResult> GetAllCompanyInfos(int iDisplayStart, int iDisplayLength, string? sSearch, int sEcho, string? sSortDir_0, int iSortCol_0)
+        [HttpGet("getallcompanybyfilter")]
+        public async Task<IActionResult> GetAllCompanyByFilter(int iDisplayStart, int iDisplayLength, string? sSearch, int sEcho, string? sSortDir_0, int iSortCol_0)
         {
             //Response Body Initialization
             ResponseDto responseDto = new ResponseDto();
@@ -33,7 +30,7 @@ namespace Assignment.API.Controllers
                     iDisplayLength = iDisplayLength, sSearch = sSearch, sEcho = sEcho, sSortDir_0 = sSortDir_0, iDisplayStart = iDisplayStart, iSortCol_0 = iSortCol_0
                 };
                 int? recCount = 0;
-                var data = await _companyInfoRepository.GetAllCompanyInfoAsync(paramDto);
+                var data = await _companyInfoRepository.GetAllCompanyByFilterAsync(paramDto);
                 if (data != null && data.Count > 0)
                 {
                     recCount = data[0].RecCount;
@@ -48,6 +45,25 @@ namespace Assignment.API.Controllers
                 responseDto.Status = ResponseStatus.Fail;
                 responseDto.Message = ex.Message;
                 responseDto.Data = new { aaData = new List<CompanyInfosDto>(), sEcho = sEcho, iTotalDisplayRecords = 0, iTotalRecords = 0 };
+                return this.StatusCode(StatusCodes.Status500InternalServerError, responseDto);
+            }
+        }
+        [HttpGet("getallcompanybysearch")]
+        public async Task<IActionResult> GetAllCompanyBySeach(string? search)
+        {
+            //Response Body Initialization
+            ResponseDto responseDto = new ResponseDto();
+            try
+            {
+                responseDto.Status = ResponseStatus.Success;
+                responseDto.Message = "Success";
+                responseDto.Data = await _companyInfoRepository.GetAllCompanyBySearchAsync(search);
+                return Ok(responseDto);
+            }
+            catch (Exception ex)
+            {
+                responseDto.Status = ResponseStatus.Fail;
+                responseDto.Message = ex.Message;
                 return this.StatusCode(StatusCodes.Status500InternalServerError, responseDto);
             }
         }

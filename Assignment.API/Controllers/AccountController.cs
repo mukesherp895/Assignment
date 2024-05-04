@@ -1,13 +1,10 @@
 ﻿using Assignment.Common;
 using Assignment.Model.Domain;
 using Assignment.Model.DTO;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net;
 using System.Security.Claims;
 using System.Text;
 
@@ -106,7 +103,7 @@ namespace Assignment.API.Controllers
                                     new Claim(ClaimTypes.Name, user.UserName),
                                     new Claim(ClaimTypes.Email, user.Email),
                                 }),
-                                Expires = DateTime.UtcNow.AddMinutes(30),
+                                Expires = DateTime.UtcNow.AddMinutes(5),
                                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(tokenKey), SecurityAlgorithms.HmacSha256Signature)
                             };
 

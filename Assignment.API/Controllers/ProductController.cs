@@ -1,11 +1,8 @@
 ﻿using Assignment.Common;
 using Assignment.DataAccess.Repository;
-using Assignment.Model.Domain;
 using Assignment.Model.DTO;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Globalization;
 
 namespace Assignment.API.Controllers
 {
@@ -20,29 +17,44 @@ namespace Assignment.API.Controllers
         {
             _productRepository = productRepository;
         }
-        [HttpGet("getallproducts")]
-        public async Task<IActionResult> GetAllProduts(string? schema)
+        [HttpGet("getallproductbyfilter")]
+        public async Task<IActionResult> GetAllProduts(int iDisplayStart, int iDisplayLength, string? sSearch, int sEcho, string? sSortDir_0, int iSortCol_0, string? schema)
         {
             //Response Body Initialization
             ResponseDto responseDto = new ResponseDto();
             try
             {
-                //Get All Products
+                DataTableParamDto paramDto = new DataTableParamDto
+                {
+                    iDisplayLength = iDisplayLength,
+                    sSearch = sSearch,
+                    sEcho = sEcho,
+                    sSortDir_0 = sSortDir_0,
+                    iDisplayStart = iDisplayStart,
+                    iSortCol_0 = iSortCol_0,
+                    Schema = schema
+                };
+                int? recCount = 0;
+                var data = await _productRepository.GetAllProductAsync(paramDto);
+                if (data != null && data.Count > 0)
+                {
+                    recCount = data[0].RecCount;
+                }
                 responseDto.Status = ResponseStatus.Success;
                 responseDto.Message = "Success";
-                responseDto.Data = await _productRepository.GetAllProductAsync(schema);
+                responseDto.Data = new { aaData = data, sEcho = paramDto.sEcho, iTotalDisplayRecords = recCount, iTotalRecords = recCount };
                 return Ok(responseDto);
             }
             catch (Exception ex)
             {
-                //Exception Response
                 responseDto.Status = ResponseStatus.Fail;
                 responseDto.Message = ex.Message;
+                responseDto.Data = new { aaData = new List<CompanyInfosDto>(), sEcho = sEcho, iTotalDisplayRecords = 0, iTotalRecords = 0 };
                 return this.StatusCode(StatusCodes.Status500InternalServerError, responseDto);
             }
         }
         [HttpPost("add")]
-        public async Task<IActionResult> Add(ProductReqDto reqDto)
+        public async Task<IActionResult> Add([FromBody] ProductReqDto reqDto)
         {
             //Response Body Initialization
             ResponseDto responseDto = new ResponseDto();
@@ -84,7 +96,7 @@ namespace Assignment.API.Controllers
             }
         }
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> Update(int id, ProductReqDto reqDto)
+        public async Task<IActionResult> Update(int id, [FromBody] ProductReqDto reqDto)
         {
             //Response Body Initialization
             ResponseDto responseDto = new ResponseDto();
@@ -125,7 +137,7 @@ namespace Assignment.API.Controllers
                 return this.StatusCode(StatusCodes.Status500InternalServerError, responseDto);
             }
         }
-        [HttpDelete("detele/{id}/{companyInfoId}")]
+        [HttpDelete("delete/{id}/{companyInfoId}")]
         public async Task<IActionResult> Delete(int id, int companyInfoId)
         {
             //Response Body Initialization

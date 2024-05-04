@@ -1,16 +1,10 @@
 ﻿using Assignment.DataAccess.DBContext;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Dapper;
 using Assignment.Model.DTO;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Assignment.Common;
-using System.Net.Http.Headers;
-using Assignment.Model.Domain;
+
 
 namespace Assignment.DataAccess.Repository
 {
@@ -18,7 +12,7 @@ namespace Assignment.DataAccess.Repository
     {
         Task<EnumData.DBAttempt> AddAsync(ProductReqDto productReqDto, string userName);
         Task<EnumData.DBAttempt> DeleteAsync(int productId, int companyInfoId);
-        Task<List<ProductsDto>> GetAllProductAsync(string? schema);
+        Task<List<ProductsDto>> GetAllProductAsync(DataTableParamDto dto);
         Task<EnumData.DBAttempt> UpdateAsync(int productId, ProductReqDto productReqDto, string userName);
     }
 
@@ -29,13 +23,13 @@ namespace Assignment.DataAccess.Repository
         {
             _dbContext = dbContext;
         }
-        public async Task<List<ProductsDto>> GetAllProductAsync(string? schema)
+        public async Task<List<ProductsDto>> GetAllProductAsync(DataTableParamDto dto)
         {
             using (SqlConnection conn = new SqlConnection(_dbContext.Database.GetConnectionString()))
             {
-                var parameters = new { schema = schema ?? "" };
+                var parameters = new { displayStart = dto.iDisplayStart, displayLength = dto.iDisplayLength, sortDir = dto.sSortDir_0 ?? "asc", sortCol = dto.iSortCol_0, search = dto.sSearch ?? "", schema = dto.Schema ?? "" };
                 await conn.OpenAsync();
-                var data = await conn.QueryAsync<ProductsDto>("Sp_ProductGet", parameters, commandType: System.Data.CommandType.StoredProcedure);
+                var data = await conn.QueryAsync<ProductsDto>("Sp_GetProductByFilter", parameters, commandType: System.Data.CommandType.StoredProcedure);
                 return data.ToList();
             }
         }

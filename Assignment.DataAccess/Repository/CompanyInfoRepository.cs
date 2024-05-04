@@ -5,11 +5,7 @@ using Assignment.Model.DTO;
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Assignment.DataAccess.Repository
 {
@@ -17,7 +13,8 @@ namespace Assignment.DataAccess.Repository
     {
         Task<EnumData.DBAttempt> AddAsync(CompanyInfos companyInfos);
         Task<EnumData.DBAttempt> DeleteAsync(CompanyInfos companyInfos);
-        Task<List<CompanyInfosDto>> GetAllCompanyInfoAsync(DataTableParamDto dto);
+        Task<List<CompanyInfosDto>> GetAllCompanyByFilterAsync(DataTableParamDto dto);
+        Task<List<DropDownListDto>> GetAllCompanyBySearchAsync(string search);
         Task<CompanyInfos> GetByIdCompanyInfoAsync(int id);
         Task<EnumData.DBAttempt> UpdateAsync(CompanyInfos companyInfos);
     }
@@ -76,7 +73,7 @@ namespace Assignment.DataAccess.Repository
             }
             return EnumData.DBAttempt.Fail;
         }
-        public async Task<List<CompanyInfosDto>> GetAllCompanyInfoAsync(DataTableParamDto dto)
+        public async Task<List<CompanyInfosDto>> GetAllCompanyByFilterAsync(DataTableParamDto dto)
         {
             using (SqlConnection conn = new SqlConnection(_dbContext.Database.GetConnectionString()))
             {
@@ -89,6 +86,10 @@ namespace Assignment.DataAccess.Repository
         public async Task<CompanyInfos> GetByIdCompanyInfoAsync(int id)
         {
             return await _dbContext.CompanyInfos.Where(w => w.Id == id).FirstOrDefaultAsync() ?? new CompanyInfos();
+        }
+        public async Task<List<DropDownListDto>> GetAllCompanyBySearchAsync(string search)
+        {
+            return await _dbContext.CompanyInfos.Where(w => w.CompanyName.Contains(search)).Select(s => new DropDownListDto { Id = s.Id, Name = s.CompanyName, Schema = s.Schema }).ToListAsync();
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Assignment.WebApp.Controllers
 {
-    [CheckAthorization]
+    [CheckSessionAthorization]
     public class HomeController : Controller
     {
         public IActionResult Index()

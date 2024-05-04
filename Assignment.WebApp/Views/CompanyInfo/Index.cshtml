@@ -1,15 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Http
-@using Assignment.Common
+@using Assignment.Common;
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @{
     ViewData["Title"] = ViewBag.PageHeader;
-    var userName = HttpContextAccessor.HttpContext.Session.GetString("UserName");
+    var baseUrl = AppSettings.BaseUrlV1;
     var accessToken = HttpContextAccessor.HttpContext.Session.GetString("AccessToken");
     var tokenType = HttpContextAccessor.HttpContext.Session.GetString("TokenType");
-    var baseUrl = AppSettings.BaseUrlV1;
 }
-
-
 <div class="row">
     <div class="col-sm-12">
         <div class="card">
@@ -36,7 +33,6 @@
                 </button>
             </div>
             <form id="frmCompanyInfo" class="md-float-material form-material">
-                @Html.AntiForgeryToken()
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-sm-12">
@@ -74,7 +70,30 @@
                 "responsive": true,
                 bProcessing: true,
                 bServerSide: true,
-                sAjaxSource: "/companyinfo/CompanyInfoGet",
+                sAjaxSource: "@baseUrl/companyinfo/getallcompanybyfilter",
+                "fnServerData": function (sSource, aoData, fnCallback) {
+                    //console.log(aoData);
+                    $.ajax({
+                        async: true,
+                        url: sSource,
+                        data: aoData,
+                        type: 'GET',
+                        dataType: 'json',
+                        headers: { 'Authorization': '@tokenType @accessToken' },
+                        crossDomain: true,
+                        success: function (response) {
+                            if (response.Status == "00" || response.Status == "99") {
+                                fnCallback(response.Data);
+                            }
+                            else if (response.Status == "88") {
+                                window.location = window.location.origin + '/account/login';
+                                return false
+                            }
+                        },
+                        error: function (xhr, status, errorThrown) {
+                        }
+                    });
+                },
                 bAutoWidth: false,
                 displayLength: 10,
                 "aoColumns": [
@@ -104,19 +123,26 @@
             $("#modaltitle").text("Company Information Add");
             $("#default-Modal").modal("show");
         });
-
+       
         $("#frmCompanyInfo").submit(function (e) {
             e.preventDefault();
             $("#frmCompanyInfo").validate();
             var formStatus = $("#frmCompanyInfo").valid();
             //console.log(formStatus);
             if (formStatus) {
-                var formdata = new FormData($('#frmCompanyInfo')[0]);
-                console.log(parseInt($("#companyId").val()));
-                var tempUrl = parseInt($("#companyId").val()) == 0 ? '/companyinfo/add' : ('/companyinfo/update/' + $("#companyId").val());
-                var tempType = parseInt($("#companyId").val()) == 0 ? 'POST' : 'PUT';
-                console.log(tempUrl);
-                console.log(tempType);
+                var data = { CompanyName: $("#companyName").val() };
+                var urls;
+                var methodType;
+                console.log($("#companyId").val());
+                if (parseInt($("#companyId").val()) == 0) {
+                    urls = '@baseUrl/companyinfo/add';
+                    methodType = 'POST';
+                }
+                else {
+                    urls = '@baseUrl/companyinfo/update/' + parseInt($("#companyId").val());
+                    methodType = 'PUT';
+                }
+
                 $("#btnSave").text("Please wait...");
                 $("#btnsave").prop("disabled", true);
                 swal({
@@ -129,28 +155,31 @@
                     closeOnConfirm: false
                 }, function (isConfirm) {
                     if (isConfirm) {
+                        console.log($("#frmCompanyInfo").serialize());
                         $.ajax({
                             async: true,
-                            url: '/companyinfo/addupdate',
-                            data: formdata,
-                            type: 'POST',
+                            url: urls,
+                            data: JSON.stringify(data),
+                            type: methodType,
                             dataType: 'json',
                             processData: false,
-                            contentType: false,
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': '@tokenType @accessToken' },
+                            crossDomain: true,
                             success: function (response) {
-                                console.log(response);
+                                //console.log(response);
                                 $("#btnSave").text("Save changes");
                                 $("#btnSave").prop("disabled", false);
-                                if (response.status == "00") {
-                                    swal("Apply", response.message, "success");
+                                if (response.Status == "00") {
+                                    swal("Apply", response.Message, "success");
                                     $("#companyInfoTable").DataTable().ajax.reload();
                                     $("#default-Modal").modal("hide");
                                 }
-                                else if (response.status == "88") {
-                                    window.location = "/account/login";
+                                else if (response.Status == "88") {
+                                    window.location = window.location.origin + '/account/login';
                                 }
                                 else {
-                                    swal("Warning", response.message, "warning");
+                                    swal("Warning", response.Message, "warning");
                                 }
                             },
                             error: function (xhr, status, errorThrown) {
@@ -160,8 +189,7 @@
                             }
                         });
                     }
-                    else
-                    {
+                    else {
                         $("#btnSave").text("Save changes");
                         $("#btnSave").prop("disabled", false);
                     }
@@ -195,19 +223,22 @@
                 {
                     $.ajax({
                         async: true,
-                        url: '/companyinfo/delete/' + data.Id,
+                        url: '@baseUrl/companyinfo/delete/' + data.Id,
                         type: 'DELETE',
+                        dataType: 'json',
+                        headers: { 'Authorization': '@tokenType @accessToken' },
+                        crossDomain: true,
                         success: function (response) {
-                            console.log(response);
-                            if (response.status == "00") {
-                                swal("Deleted", response.message, "success");
+                            //console.log(response);
+                            if (response.Status == "00") {
+                                swal("Deleted", response.Message, "success");
                                 $("#companyInfoTable").DataTable().ajax.reload();
                             }
-                            else if (response.status == "88") {
-                                window.location = "/account/login";
+                            else if (response.Status == "88") {
+                                window.location = window.location.origin + '/account/login';;
                             }
                             else {
-                                swal("Warning", response.message, "warning");
+                                swal("Warning", response.Message, "warning");
                             }
                         },
                         error: function (xhr, status, errorThrown) {

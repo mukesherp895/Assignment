@@ -6,9 +6,8 @@ builder.Services.AddHttpContextAccessor();
 //Set Session Timeout. Default is 20 minutes.
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.IdleTimeout = TimeSpan.FromMinutes(5);
     options.Cookie.Name = ".AssignmentSession";
-    options.IOTimeout = TimeSpan.FromMinutes(30);
 });
 // Add services to the container.
 builder.Services.AddControllersWithViews();

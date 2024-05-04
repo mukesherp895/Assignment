@@ -1,0 +1,472 @@
+﻿@using Microsoft.AspNetCore.Http
+@using Assignment.Common;
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    ViewData["Title"] = ViewBag.PageHeader;
+    var baseUrl = AppSettings.BaseUrlV1;
+    var accessToken = HttpContextAccessor.HttpContext.Session.GetString("AccessToken");
+    var tokenType = HttpContextAccessor.HttpContext.Session.GetString("TokenType");
+}
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-header">
+                <span class="pcoded-micon"><i class="fa fa-filter"></i> Filter </span>
+            </div>
+            <div class="card-block">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <select class="filterSelect2" id="filterSchema">
+                            <option value="" selected="selected">Select Company</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <button type="button" class="btn btn-grd-warning btn-round btn-sm" id="btnfilter"><i class="feather icon-search"> Filter</i></button>  <button type="button" class="btn btn-grd-danger btn-round btn-sm" id="btnreset"><i class="feather icon-refresh-cw"> Reset</i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-header">
+                <button type="button" class="btn btn-grd-inverse btn-round btn-sm" id="btnAdd"><i class="feather icon-plus"> Add</i></button>
+            </div>
+            <div class="card-block">
+                <div class="table-responsive dt-responsive">
+                    <table id="productTable" class="table table-striped table-bordered nowrap">
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="default-Modal-Add" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="modaltitle">Product Add</h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="frmProductAdd" class="md-float-material form-material">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <input type="hidden" name="Id" id="productId" value="0" />
+                            <div class="form-group form-primary">
+                                <select class="Select2" name="CompanyInfoId" id="companyInfoId" required="">
+                                    <option value="" selected="selected">Select Company</option>
+                                </select>
+                            </div>
+                            <div class="form-group form-primary">
+                                <input type="text" name="Title" class="form-control" id="pTitle" required="" placeholder="Product Title">
+                            </div>
+                            <div class="form-group form-primary">
+                                <input type="text" name="Description" class="form-control" id="pDescription" required="" placeholder="Product Description">
+                            </div>
+                            <div class="form-group form-primary">
+                                <input type="text" name="Price" class="form-control" id="pPrice" required="" placeholder="Product Title" onkeypress="allowNumbersOnly($(this), event)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding: 8px;">
+                    <button type="submit" class="btn btn-primary waves-effect waves-light btn-sm" id="btnSave">Save changes</button>
+                    <button type="button" class="btn btn-danger waves-effect btn-sm" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="default-Modal-Edit" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="modaltitle">Product Edit</h6>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="frmProductEdit" class="md-float-material form-material">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <input type="hidden" name="Id" id="productIdEdit" value="0" />
+                            <input type="hidden" name="CompanyInfoId" id="companyInfoIdEdit" value="0" />
+                            <div class="form-group form-primary">
+                                <input type="text" name="Title" class="form-control" id="pTitleEdit" required="" placeholder="Product Title">
+                            </div>
+                            <div class="form-group form-primary">
+                                <input type="text" name="Description" class="form-control" id="pDescriptionEdit" required="" placeholder="Product Description">
+                            </div>
+                            <div class="form-group form-primary">
+                                <input type="text" name="Price" class="form-control" id="pPriceEdit" required="" placeholder="Product Title" onkeypress="allowNumbersOnly($(this), event)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding: 8px;">
+                    <button type="submit" class="btn btn-primary waves-effect waves-light btn-sm" id="btnEdit">Save changes</button>
+                    <button type="button" class="btn btn-danger waves-effect btn-sm" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(function () {
+            ProductTableGet();
+            $('.filterSelect2').select2({
+                //dropdownParent: $('#default-Modal'),
+                ajax: {
+                    url: "@baseUrl/companyinfo/getallcompanybysearch",
+                    type: "GET",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term
+                        }
+                    },
+                    headers: { 'Authorization': '@tokenType @accessToken' },
+                    crossDomain: true,
+                    processResults: function (data, params) {
+                        console.log(data);
+                        if (data.Status == "00") {
+                            return {
+                                results: $.map(data.Data, function (item) {
+                                    //console.log(item);
+                                    return {
+                                        text: item.Name,
+                                        id: item.Schema,
+                                    }
+                                })
+                            };
+                        }
+                        else if (data.Status == "88") {
+                            window.location = window.location.origin + '/account/login';
+                            return false
+                        }
+                    },
+                    cache: true
+                }
+            });
+
+            $('.Select2').select2({
+                dropdownParent: $('#default-Modal-Add'),
+                ajax: {
+                    url: "@baseUrl/companyinfo/getallcompanybysearch",
+                    type: "GET",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            search: params.term
+                        }
+                    },
+                    headers: { 'Authorization': '@tokenType @accessToken' },
+                    crossDomain: true,
+                    processResults: function (data, params) {
+                        console.log(data);
+                        if (data.Status == "00") {
+                            return {
+                                results: $.map(data.Data, function (item) {
+                                    //console.log(item);
+                                    return {
+                                        text: item.Name,
+                                        id: item.Id,
+                                    }
+                                })
+                            };
+                        }
+                        else if (data.Status == "88") {
+                            window.location = window.location.origin + '/account/login';
+                            return false
+                        }
+                    },
+                    cache: true
+                }
+            });
+
+        })
+
+        //DataTable
+        function ProductTableGet() {
+            $("#productTable").DataTable({
+                async: true,
+                "responsive": true,
+                "fnServerParams": function (aoData) {
+                    aoData.push({ "name": "Schema", "value": $("#filterSchema").val() });
+                },
+                bProcessing: true,
+                bServerSide: true,
+                sAjaxSource: "@baseUrl/product/getallproductbyfilter",
+                "fnServerData": function (sSource, aoData, fnCallback) {
+                    $.ajax({
+                        async: true,
+                        url: sSource,
+                        data: aoData,
+                        type: 'GET',
+                        dataType: 'json',
+                        headers: { 'Authorization': '@tokenType @accessToken' },
+                        crossDomain: true,
+                        success: function (response) {
+                            if (response.Status == "00" || response.Status == "99") {
+                                fnCallback(response.Data);
+                            }
+                            else if (response.Status == "88") {
+                                window.location = window.location.origin + '/account/login';
+                                return false
+                            }
+                        },
+                        error: function (xhr, status, errorThrown) {
+                        }
+                    });
+                },
+                bAutoWidth: false,
+                displayLength: 10,
+                "aoColumns": [
+                    { "mData": 'RowNum', name: "RowNum", title: 'SN', bSortable: false },
+                    {
+                        "mData": function (e) {
+                            var data = JSON.stringify(e);
+                            //console.log(data);
+                            return "<button type='button' class='btn btn-grd-primary btn-round btn-mini' onclick='edit(" + data + ")'><i class='fa fa-edit'> Edit</i></button> <button type='button' class='btn btn-grd-danger  btn-round btn-mini' onclick='del(" + data + ")'><i class='fa fa-trash'> Remove</i></button>";
+                        }, title: 'Action', orderable: false
+                    },
+                    { "mData": 'Title', name: "Title", title: 'Title', bSortable: true },
+                    { "mData": 'Description', name: "Description", title: 'Description', bSortable: true },
+                    { "mData": 'Price', name: "Price", title: 'Price', bSortable: true },
+                    { "mData": 'CompanyName', name: "CompanyName", title: 'CompanyName', bSortable: true },
+                    { "mData": 'CreatedBy', name: "CreatedBy", title: 'CreatedBy', bSortable: true },
+                    { "mData": 'CreatedDateTime', name: "CreatedDateTime", title: 'CreatedDateTime', bSortable: true },
+                    { "mData": 'UpdatedBy', name: "UpdatedBy", title: 'UpdatedBy', bSortable: true },
+                    { "mData": 'UpdatedDateTime', name: "UpdatedDateTime", title: 'UpdatedDateTime', bSortable: true },
+                ],
+            });
+        }
+
+        //Add Model Show
+        $("#btnAdd").click(function () {
+            $('#frmProductAdd').trigger("reset");
+            $("#frmProductAdd").validate().resetForm();
+            $("#productId").val(0);
+            var option = new Option("Select Company", "", true, true);
+            $("#companyInfoId").append(option).trigger('change');
+            $("#default-Modal-Add").modal("show");
+        });
+
+
+        //Edit Model Show
+        function edit(data) {
+            console.log(data);
+            $('#frmProductEdit').trigger("reset");
+            $("#frmProductEdit").validate().resetForm();
+            $("#productIdEdit").val(data.Id);
+            $("#pTitleEdit").val(data.Title);
+            $("#pDescriptionEdit").val(data.Description);
+            $("#pPriceEdit").val(data.Price);
+            $("#companyInfoIdEdit").val(data.CompanyInfoId)
+            $("#default-Modal-Edit").modal("show");
+        }
+
+        $("#frmProductAdd").submit(function (e) {
+            e.preventDefault();
+            $("#frmProductAdd").validate();
+            var formStatus = $("#frmProductAdd").valid();
+            //console.log(formStatus);
+            if (formStatus) {
+                //var formdata = new FormData($('#frmProductAdd')[0]);
+                var data = { CompanyInfoId: $("#companyInfoId").val(), Title: $("#pTitle").val(), Description: $("#pDescription").val(), Price: $("#pPrice").val() };
+                console.log(data);
+                $("#btnSave").text("Please wait...");
+                $("#btnsave").prop("disabled", true);
+                swal({
+                    title: "Are you sure?",
+                    text: "Apply this information",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonClass: "btn-danger",
+                    confirmButtonText: "Yes, Apply it!",
+                    closeOnConfirm: false
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+                            async: true,
+                            url: '@baseUrl/product/add',
+                            data: JSON.stringify(data),
+                            type: 'POST',
+                            dataType: 'json',
+                            processData: false,
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': '@tokenType @accessToken' },
+                            crossDomain: true,
+                            success: function (response) {
+                                console.log(response);
+                                $("#btnSave").text("Save changes");
+                                $("#btnSave").prop("disabled", false);
+                                if (response.Status == "00") {
+                                    swal("Apply", response.Message, "success");
+                                    $("#productTable").DataTable().ajax.reload();
+                                    $("#default-Modal-Add").modal("hide");
+                                }
+                                else if (response.Status == "88") {
+                                    window.location = "/account/login";
+                                }
+                                else {
+                                    swal("Warning", response.Message, "warning");
+                                }
+                            },
+                            error: function (xhr, status, errorThrown) {
+                                $("#btnSave").text("Save changes");
+                                $("#btnSave").prop("disabled", false);
+                                swal("Error!", xhr.status, "error");
+                            }
+                        });
+                    }
+                    else {
+                        $("#btnSave").text("Save changes");
+                        $("#btnSave").prop("disabled", false);
+                    }
+                });
+            }
+        });
+
+        $("#frmProductEdit").submit(function (e) {
+            e.preventDefault();
+            $("#frmProductEdit").validate();
+            var formStatus = $("#frmProductEdit").valid();
+            //console.log(formStatus);
+            if (formStatus) {
+                //var formdata = new FormData($('#frmProductEdit')[0]);
+                var data = { CompanyInfoId: $("#companyInfoIdEdit").val(), Title: $("#pTitleEdit").val(), Description: $("#pDescriptionEdit").val(), Price: $("#pPriceEdit").val() };
+                console.log(data);
+                $("#btnEdit").text("Please wait...");
+                $("#btnEdit").prop("disabled", true);
+                swal({
+                    title: "Are you sure?",
+                    text: "Apply this information",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonClass: "btn-danger",
+                    confirmButtonText: "Yes, Apply it!",
+                    closeOnConfirm: false
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+                            async: true,
+                            url: '@baseUrl/product/update/' + parseInt($("#productIdEdit").val()),
+                            data: JSON.stringify(data),
+                            type: 'PUT',
+                            dataType: 'json',
+                            processData: false,
+                            contentType: "application/json; charset=utf-8",
+                            headers: { 'Authorization': '@tokenType @accessToken' },
+                            crossDomain: true,
+                            success: function (response) {
+                                console.log(response);
+                                $("#btnEdit").text("Save changes");
+                                $("#btnEdit").prop("disabled", false);
+                                if (response.Status == "00") {
+                                    swal("Apply", response.Message, "success");
+                                    $("#productTable").DataTable().ajax.reload();
+                                    $("#default-Modal-Edit").modal("hide");
+                                }
+                                else if (response.Status == "88") {
+                                    window.location = "/account/login";
+                                }
+                                else {
+                                    swal("Warning", response.Message, "warning");
+                                }
+                            },
+                            error: function (xhr, status, errorThrown) {
+                                $("#btnEdit").text("Save changes");
+                                $("#btnEdit").prop("disabled", false);
+                                swal("Error!", xhr.status, "error");
+                            }
+                        });
+                    }
+                    else {
+                        $("#btnEdit").text("Save changes");
+                        $("#btnEdit").prop("disabled", false);
+                    }
+                });
+            }
+        });
+
+        //Delete
+        function del(data) {
+            swal({
+                title: "Are you sure delete this?",
+                text: "Apply this information",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes, Apply it!",
+                closeOnConfirm: false
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    $.ajax({
+                        async: true,
+                        url: '@baseUrl/product/delete/' + data.Id + '/' + data.CompanyInfoId,
+                        type: 'DELETE',
+                        headers: { 'Authorization': '@tokenType @accessToken' },
+                        crossDomain: true,
+                        success: function (response) {
+                            console.log(response);
+                            if (response.Status == "00") {
+                                swal("Deleted", response.Message, "success");
+                                $("#productTable").DataTable().ajax.reload();
+                            }
+                            else if (response.Status == "88") {
+                                window.location = "/account/login";
+                            }
+                            else {
+                                swal("Warning", response.Message, "warning");
+                            }
+                        },
+                        error: function (xhr, status, errorThrown) {
+                            swal("Error!", xhr.status, "error");
+                        }
+                    });
+                }
+            });
+        }
+
+        //Filter
+        $("#btnfilter").click(function () {
+            $("#productTable").DataTable().ajax.reload();
+        })
+        //Reset
+        $("#btnreset").click(function () {
+            var date = new Date();
+            $("#filterSchema").val("").trigger('change');
+            $("#productTable").DataTable().ajax.reload();
+        })
+
+        function allowNumbersOnly(c, e) {
+            var code = (e.which) ? e.which : e.keyCode;
+            if ((e.which != 46 || c.val().indexOf('.') != -1) && (code < 48 || code > 57)) {
+                e.preventDefault();
+            }
+        }
+    </script>
+}
