@@ -1,0 +1,15 @@
+version: '3.4'
+
+services:
+  assignment.webapp:
+    image: ${DOCKER_REGISTRY-}assignmentwebapp
+    build:
+      context: .
+      dockerfile: Assignment.WebApp\Dockerfile
+
+  assignment.api:
+    image: ${DOCKER_REGISTRY-}assignmentapi
+    build:
+      context: .
+      dockerfile: Assignment.API\Dockerfile
+
